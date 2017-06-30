@@ -23,3 +23,15 @@ Integer
 	-less than 2^16 guaranteed not to get 'wrap around'
 	- e.g. 2^15 + 2^16 should be 2^17 but might wrap to 2^0 and start counting up again
 	* Think about this for things like counters (unique ids)
+
+Float
+	- some decimal numbers can't be represented (e.g. 1.3)
+	- IEEE floating point arithmetic
+
+#example of c++ hello world
+#include <iostream>
+
+int main() {
+	std::cout << "Hello, world!" << std::end
+	return 0
+}
