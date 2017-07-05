@@ -202,3 +202,106 @@ void swap(int *ap, int *bp) {
   *bp = temp;
 }
 
+### Handout 1: Introducing the Standard Template Library (C++)
+// Two useful references for learning more about the STL
+http://www.dinkumware.com/manuals/default.aspx
+http://www.sgi.com/tech/stl
+
+PAIR
+  - template struct with 2 fields
+
+template <class U, class V>
+struct pair {
+  U first;
+  V second;
+  pair(const U& first = U(), const V& second = V()) :
+  first(first), second(second) {}
+};
+
+template <class U, class Y>
+pair<U, V> make_pair(const U& first, const V& second);
+
+  - struct (not a class)
+  - can freely access first and second (no private access modifiers)
+    - if it had been declared as a class, first and second would have been private by default
+  * all associative containers (map, hash_map, multimap) require a pair in order to insert new data
+
+map<string, int> portfolio;
+portfolio.insert(make_pair(string("LU"), 400));
+portfolio.insert(make_pair(string("AAPL"), 80));
+portfolio.insert(make_pair(string("GOOG"), 6500));
+
+VECTOR
+  - type-safe, sequential container class that behaves like an array
+    - grows and shrinks automatically in response to insertion and deletion
+    - responds to same syntax as arrays
+    * used more often than any other STL class (usually in place of an array)
+
+    - to use it you must include this at the top of the file
+
+  #include <vector>
+  using namespace std;
+
+  - iterate through using a standard for-loop construction
+  - iterators behave like pointers (and often are when encapsulated els are laid out sequentially in memory)
+  - removing an element causes all pointers to be invalidated (as vector will be resized)
+
+
+MAP
+  - boiler plate required to use it
+
+#include <map>
+using namespace std;
+
+  - generic symbol table
+  - allows you to specify data type of key and value
+
+typedef map<string, vector<string> > chordMap;
+chordMap jazzChords;
+
+vector<string> cmajor;
+cmajor.push_back("C");
+cmajor.push_back("E");
+cmajor.push_back("G");
+
+pair<chordMap::iterator, bool> result =
+  jazzChords.insert(make_pair(string("C Major"), cmajor));
+
+  - insert won''t insert if the key already exists with a value
+  - return value of insert is pair
+    - 2nd field reports whether or not key is already bound to some other value
+      - true == insertion really did something, key is new to the map
+      - false == key is already present and no changes were made
+    - first field of pair stores iterator addressing pair stored inside map on behalf of the key
+
+chordMap::const_iterator found = jazzChords.find("F# minor 11");
+if (found == jazzChords.end())
+  cout << "Chord was never recorded." << endl;
+else {
+  cout << "Notes of the " << found->first << " chord:" << endl;
+for (vector<string>::const_iterator note = found->second.begin();
+      note != found->second.end(); ++note)
+    cout << "\t" << *note << endl;
+}
+
+  - find allows you to determine if a key of interest is inside your map
+    - false is `.end()` rather than `NULL` or `-1`
+
+map<string, int> portfolio;
+
+portfolio["LU"] = 400;
+portfolio["AAPL"] = 80;
+portfolio["GOOG"] = 6500;
+
+  - operator[] allows access/update a map using array-like semantics
+    - allows update of an existing key (which insert does not)
+
+NOTE
+  - all large data structures (regardless of origin) should be passed by address or by reference
+    - C++ purist prefer reference (. is pretter than * and ->)
+    - avoid passing by value since that involves a costly copy operation that if done right takes time and if done wrong takes time and might share data between original and copy
+
+
+### Handout 2: UNIX Basics
+
+    
