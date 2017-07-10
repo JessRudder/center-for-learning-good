@@ -301,7 +301,98 @@ NOTE
     - C++ purist prefer reference (. is pretter than * and ->)
     - avoid passing by value since that involves a costly copy operation that if done right takes time and if done wrong takes time and might share data between original and copy
 
+### Lecture 4: Creating a Generic Swap Function for Data Types of Arbitrary Size
 
-### Handout 2: UNIX Basics
+void swap(int *ap, int *bp) {
+  int temp =*ap;
+  *ap = *bp;
+  *bp = temp;
+}
 
-    
+  - can't swap doubles/structs/etc because it's expecting 4 byte ints
+    - anything bigger will overflow
+    - how can you write it to be generic for all data types?
+  - use generic pointer type (void *vpl)
+    - doesnt mean it points to nothing but means you dont know the size
+
+void swap (void *vp1, void *vp2) {
+  void temp = *vp1; 
+  *vp1 = *vp2;
+  *vp2 = temp;
+}
+
+  - issues with this approach
+    - cant declare variable as void type unless void * as generic pointer
+    - cant dereference a void *
+
+void swap (void *vp1, void *vp2, int size) {
+  char buffer[size];
+  memcpy(buffer, vp1, size);
+  memcpy(vp1, vp2, size);
+  memcpy(vp2, buffer, size);
+}
+  - size should be the number of bytes of the things being swapped
+  - memcpy doesnt pay attention to \0, you have to tell it how many bytes to pay attention to
+
+int x = 17, y = 37;
+swap(&x, &y, sizeof(int));
+
+double d = pi, e = e;
+swap(&d, &e, sizeof(double))
+
+  - implementation can be problematic as its easy to get the call wrong
+int i = 44;
+short s = 5;
+swap(&i,&s, sizeof(short))
+
+  - above will put 0101 in left most section of the 4bytes of 44 and the left most 0s from 44 into the 2 bytes of the short
+  - if you did the opposite, youd end up with random parts of memory next to the short copied into the int and parts of the int overwriting random memory next to short
+
+char * husband = strdup("Fred");
+char * wife = strdup("Wilma");
+
+  // want husband var to be associated with "Wilma" string and wife var to be associated with "Fred" string
+
+swap(&husband, &wife, sizeof(char *));
+  // char star is a pointer to the char in memory
+  // |F|r|e|d|\0| & |W|i|l|m|a|\0| are memory in the heap
+  // swap is swapping the addresses contained in the pointers not the values referenced by those pointers
+  // Nothing happens to capital F or W (or any chars that come after them)
+  // NOTE: If you mistakenly passed in husband/wife instead of &husband/&wife, you'd swap the first characters "Wilm\0" and "Freda\0"
+
+// NOTE: Be very careful how you code when you're dealing with generics b/c the compiler won't be able to catch as many problems
+
+
+// linear search (front to back of the array) returning index of first occurance of key in the array
+int lsearch(int key, int array[], int size) {
+  for(int i = 0; i<size; i++) {
+    if(array[i] == key) {
+      return i;
+    }
+  }
+  return null;
+}
+
+// lot happens in array[i] == key which makes it not possible for this implementation to be generic
+// reframe it in terms of 'a generic blob of memory' that needs to be searched
+  // You'll need to tell it the size of the elements
+
+void * lsearch(void * key, void * base, int n, int elemSize) {
+  for(int i = 0; i < n; i++;) {
+    void * elemAddr = (char*)base + (i * elemSize); // seduce it to think it's a one byte char star, pointer math and regular math are same if its a 1 byte el
+    if (memcmp(key, elemAddr, elemSize) == 0){ //compares elemSize bytes at key address with elemSize bytes and elemAddr address and returns 0 if they match
+      return elemAddr; //won't work for char pointers, c strings, structs that have pointers inside
+    }
+  }
+}
+
+// specify key and array by address, specify how wide the elements are, how many elements there are, compare material at address of the pointer, etc
+// fine to use void * because we're going from more specific to less specific
+// Should really just use function pointers
+
+
+void * lsearch(void * key, void * base, int n, int elemSize, int (*cmpfn)(void *, void *)) {
+
+}
+
+  // 5th parameter has to be a pointer to a function that takes any two void* and returns an int
