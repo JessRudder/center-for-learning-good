@@ -396,3 +396,123 @@ void * lsearch(void * key, void * base, int n, int elemSize, int (*cmpfn)(void *
 }
 
   // 5th parameter has to be a pointer to a function that takes any two void* and returns an int
+
+### Lecture 5: Generic Lsearch - Prototype
+void * lsearch(void * key, void * base, int n, int elemSize, int (*cmpfn)(void *, void *)) {
+  for(int i = 0; i < n; i++;) {
+    void * elemAddr = (char*)base + (i * elemSize); // seduce it to think it's a one byte char star, pointer math and regular math are same if its a 1 byte el
+    if (cmpfn(key, elemAddr) == 0){ //compares elemSize bytes at key address with elemSize bytes and elemAddr address and returns 0 if they match
+      return elemAddr; //won't work for char pointers, c strings, structs that have pointers inside
+    }
+  }
+  return NULL;
+}
+
+// have to pass in a callback/hook that tells it how to compare elements
+
+// how it works - a real life example
+int array[] = {4,2,3,7,11,6};
+int size = 6;
+int number = 7;
+
+int * found = lsearch(&number, array, 6, sizeof(int), IntCmp)
+
+if(found == NULL) //you're sad
+else // you're happy
+
+// NOTE: Best practice is to write a comparison function that matches the prototype exactly
+
+int IntCmp(void * elem1, void * elem2) {
+  int * ip1 = elem1; //modern c compiler doesn't require a cast
+  int * ip2 = elem2;
+
+  return *ip1 - *ip2; // matches will be 0, all else will be neg/pos number
+}
+
+// not best way to specify generics but this is what was available to C when it was created
+// pros are that it's very memory efficient and runs fast
+
+// more complicated when you're searching through arrays of c-strings to find matches
+
+| Ab\0 | F#\0 | B\0 | Gb\0 | D\0 | <--character arrays full of char*
+
+
+char * notes[] = {"Ab", "F#", "B", "Gb", "D"};
+
+char * favoriteNote = "Eb";
+
+char ** found = lsearch(&favoriteNote, notes, 5, sizeof(char *) StrCmp);
+
+// passing in ampersand b/c we want true data type of the key that's held by lsearch to really be of the same type as all the pointers that are computed manually as part of the implementation
+// allows you to compare two char **'s down below rather than a char * and a char **
+
+int StrCmp(void * vp1, void * vp2) {
+  // vp1 will be a char **
+  char * s1 = *(char **)vp1;
+  char * s2 = *(char **)vp2;
+
+  return strcmp(s1, s2) // built in function return difference b/w two ascii values of non-matching chars or 0 if it matches
+}
+
+// usually built in function called lsearch & bsearch in compilers
+
+// this is signature for the built-in bsearch method
+void * bsearch (void * key, void * base, int n, int elemSize, int(*cmp)(void *, void *)) {
+
+}
+
+// you can pass in the address of anything you want to as long as the comparison function knows
+// that the first element will be an address of something
+// the final parameter must truly be a function (object-oriented-less, normal function), no methods w/addresses of objects floating around
+
+// different between function and method is method has address of relevant object available as invisible parameter ('this','self')
+
+// c++ pass around address of the manipulated object with keyword called 'this'
+
+// IMPLEMENT A STACK DATA STRUCTURE!!!!
+// We'll make it int specific before we do the work to make it generic -- no void stars yet
+// stack.h file
+
+typedef struct {
+  int * elems;
+  int logicalLen;
+  int allocatedLen;
+} stack;
+
+// use this to declare the stack, but only use the methods below to actually manipulate it
+
+void StackNew(stack * s);
+void StackDispose(stack * s);
+void StackPush(stack * s, int value);
+void StackPop(stack * s)
+
+stack s; //allocates the memory space but doesn't clear things out
+StackNew(&s); // takes raw space, clears it out, and sets the starting variables (allocatedLen 4, logicalLen 0)
+
+for(int i = 0; i < 5; i++){ // when it gets to the 5th element, it will need to double the length of the array and add in the next element
+  stackPush(&s, i);
+}
+
+StackDispose(&s);
+
+//stack.h file functions
+
+void StackNew(stack * s) {
+  s -> logicalLen = 0;
+  s -> allocLen = 4;
+  s -> elems = malloc(4 * sizeof(int)) // expects 1 arg that represents the # of bytes you need it to allocate
+  assert(s -> elems != NULL);  // if passes, it's a no-op, if it breaks, it ends the program and lets you know why
+}                              // this allows you to end the program if malloc failed rather than failing later when you try to use the memory (no segfaults or bus errors)
+
+
+
+
+
+
+
+
+
+
+
+
+
