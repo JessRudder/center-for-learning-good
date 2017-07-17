@@ -499,10 +499,143 @@ StackDispose(&s);
 
 void StackNew(stack * s) {
   s -> logicalLen = 0;
-  s -> allocLen = 4;
+  s -> allocatedLen = 4;
   s -> elems = malloc(4 * sizeof(int)) // expects 1 arg that represents the # of bytes you need it to allocate
   assert(s -> elems != NULL);  // if passes, it's a no-op, if it breaks, it ends the program and lets you know why
 }                              // this allows you to end the program if malloc failed rather than failing later when you try to use the memory (no segfaults or bus errors)
+
+### Lecture 6: Integer Stack Implementation - Constructor and Destructor
+
+// stack.c file ?need to check if this should be stack c or stack h (changed from lec 5 to 6)
+
+void StackNew(stack *s) {
+  s -> logicalLen = 0;
+  s -> allocatedLen = 4;
+  s -> elems = malloc (4*sizeof(int))
+  asser(s -> elems != NULL);
+}
+
+void StackDispose(stack *s) {
+  free(s -> elems);
+}
+
+// with initial chosen allocatedLen of 4, you can push in 4 integers w/ no problem
+// when you try to add the 5th, things are going to get interesting
+
+// simple implementation for when there's already enough memory allocated
+void StackPush(stack *s, int value) {
+  s -> elems[s -> logicalLen] = value;
+  s -> logicalLen ++;
+}
+
+// in cases where there's not already memory allocated for new elem
+// in C, will have to 
+void StackPush(stack *s, int value) {
+  if(s -> logicalLen == s -> allocatedLen){
+    s -> allocatedLen *= 2;
+    s -> elems = realloc(s -> elems, s -> allocatedLen * sizeof(int)) // no equivalent of realloc in c++
+    assert(s -> elems != NULL);
+  }
+  
+  s -> elems[s -> logicalLen] = value;
+  s -> logicalLen ++;
+}
+
+// realloc sees if it can resize memory in place (if memory nearby is empty) rather than lifting it up and
+//copying all of the contents over to a new block of memory
+// if it can resize in place, it does (and returns same initial address) otherwise it calls malloc elsewhere and 
+// replicates the current bit patterns so contents are copied to new block (returns the new initial address and frees the previously used memory)
+// realloc defaults to a malloc call if the first argument is NULL (i.e. no initial address is given)
+// if realloc is NULL (e.g. the memory didn't extend), the previous memory is left untouched so you don't lose what you already had
+
+
+//assert works like a function but is actually a macro (#define wih arguments)
+
+in StackPop(stack *s) {
+  assert(s => logicalLen > 0);
+  s -> logicalLen --;
+  return s -> elems[s -> logicalLen];
+}
+
+
+// What do we need to do if we want to make a stack data type that works for multiple data types?
+//stack.h
+
+typedef struct {
+  void * elems;
+  int elemSize;
+  int logLength;
+  int allocLength;
+  [???]
+} stack;
+
+
+void StackNew(stack *s, int elemSize)
+void StackDispose(stack *s);
+void StackPush(stack *s, void *elemAddr)
+void StackPop(stack *s, void *elemAddr)
+
+// stack.c
+
+void StackNew(stack *s, int elemSize) {
+  assert(s -> elemSize > 0)
+
+  s -> elemSize = elemSize
+  s -> logLength = 0;
+  s -> allocLength = 4;
+  s -> elems = malloc(4 * elemSize);
+
+  assert(s -> elems != NULL);
+}
+
+// simple implementation that doesn't account for the fact the material inside the stack could be 
+// quite complicated -- will have to revisit later
+void StackDispose (stack *s) {
+  free(s -> elems);
+}
+
+void StackPush (stack *s, void *elemAddr) {
+  if(s -> logLength == s -> allocLength) {
+    StackGrow(s);
+  }
+
+  void *target = (char *) s -> elems + s -> logLength * s -> elemSize;
+  memcpy(target, elemAddr, s -> elemSize);
+  s -> logLength ++;
+}
+
+// gotta cast it as a char* so you can do the pointer arithmetic since you can't do it on 
+// a void* and that's what elems starts out as
+
+// static (decorating prototype of c or c++ function) (e.g. static void StackGrow(stack *s))
+    // - means this should be considered to be a private function that shouldn't be advertised outside this file
+
+static void StackGrow(stack *s) {
+  s -> allocLength *= 2;
+  s -> elems = realloc(s -> elems, s -> allocLength *, s -> elemSize);
+}
+
+void StackPop (stack *s, void * elemAddr) {
+  void *source = (char *) s -> elems + (s -> logLength - 1) * s -> elemSize;
+  memcpy (elemAddr, source, s -> elemSize);
+  s -> logLength --;s
+}
+
+// example
+stack s
+StackNew(&s, sizeof(int));
+// imagine pushed on 14 elements
+StackPop(&s, &top); //&top is address of top element
+
+// two types of unit tests
+  // those written on .c 
+  // those written as a client to make sure it's running as you think it should
+
+// for upcoming assignment, it's easy to get things to compile but hard to keep it from crashing (because you've failed to handle the pointers properly)
+
+
+
+
 
 
 
