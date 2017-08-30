@@ -633,10 +633,7 @@ StackPop(&s, &top); //&top is address of top element
 
 // for upcoming assignment, it's easy to get things to compile but hard to keep it from crashing (because you've failed to handle the pointers properly)
 
-
-
-
-
+### Lecture 7: 
 
 
 
